@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Six Painel — painel</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --black: #000000;
+  --black2: #0a0a0a;
+  --black3: #111111;
+  --black4: #1a1a1a;
+  --black5: #222222;
+  --white: #f0f0f0;
+  --white2: #aaaaaa;
+  --white3: #555555;
+  --lime: #c6ff00;
+  --red: #ff3b30;
+  --orange: #ff6a00;
+  --blue: #4d9eff;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: .025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 200px;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.page { max-width: 1080px; margin: 0 auto; padding: 0 28px 80px; }
+
+header {
+  padding: 40px 0 36px;
+  border-bottom: 1px solid var(--black4);
+  margin-bottom: 48px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  animation: fadeUp .5s ease both;
+}
+
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 30px; color: var(--white); letter-spacing: -1px; line-height: 1; }
+.logo em { font-style: normal; color: var(--lime); }
+.logo-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--white3); margin-top: 6px; letter-spacing: .5px; }
+
+.status-pill {
+  display: flex; align-items: center; gap: 7px;
+  font-family: 'DM Mono', monospace; font-size: 12px; color: var(--white2);
+  background: var(--black3); border: 1px solid var(--black4);
+  padding: 8px 14px; border-radius: 100px;
+}
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--lime); box-shadow: 0 0 8px var(--lime);
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.config-section {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-bottom: 48px; animation: fadeUp .5s .08s ease both;
+}
+@media(max-width:600px){.config-section{grid-template-columns:1fr}}
+
+.config-field {
+  background: var(--black2); border: 1px solid var(--black4);
+  border-radius: 10px; padding: 16px 18px; transition: border-color .2s;
+}
+.config-field:focus-within { border-color: var(--black5); }
+.config-field label {
+  display: block; font-family: 'DM Mono', monospace; font-size: 10px;
+  color: var(--white3); margin-bottom: 8px; letter-spacing: 1.5px; text-transform: uppercase;
+}
+.config-field input {
+  width: 100%; background: transparent; border: none; outline: none;
+  color: var(--white); font-family: 'DM Mono', monospace; font-size: 13px;
+}
+.config-field input::placeholder { color: var(--white3); }
+
+.stats-row {
+  display: grid; grid-template-columns: repeat(5,1fr); gap: 10px;
+  margin-bottom: 48px; animation: fadeUp .5s .15s ease both;
+}
+@media(max-width:700px){.stats-row{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:400px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+
+.stat {
+  background: var(--black2); border: 1px solid var(--black4);
+  border-radius: 10px; padding: 18px 16px;
+  position: relative; overflow: hidden;
+  transition: transform .15s, border-color .2s;
+}
+.stat:hover { transform: translateY(-2px); border-color: var(--black5); }
+.stat-n { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 36px; line-height: 1; margin-bottom: 6px; }
+.stat-l { font-size: 11px; color: var(--white3); font-weight: 500; }
+.stat.s-total  .stat-n { color: var(--white); }
+.stat.s-active .stat-n { color: var(--lime); }
+.stat.s-exp    .stat-n { color: var(--orange); }
+.stat.s-rev    .stat-n { color: var(--red); }
+.stat.s-hwid   .stat-n { color: var(--blue); }
+.stat::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; border-radius:0 0 10px 10px; opacity:.5; }
+.stat.s-total::after  { background:var(--white3); }
+.stat.s-active::after { background:var(--lime); }
+.stat.s-exp::after    { background:var(--orange); }
+.stat.s-rev::after    { background:var(--red); }
+.stat.s-hwid::after   { background:var(--blue); }
+
+.section-title {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px;
+  margin-bottom: 16px; letter-spacing: -.3px;
+}
+.section-title span { font-family:'DM Mono',monospace; font-size:11px; color:var(--white3); font-weight:400; margin-left:8px; }
+
+.action-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin-bottom: 48px; animation: fadeUp .5s .2s ease both;
+}
+@media(max-width:680px){.action-grid{grid-template-columns:1fr}}
+
+.card { background: var(--black2); border: 1px solid var(--black4); border-radius: 14px; overflow: hidden; }
+.card-header { padding: 18px 20px 0; display:flex; align-items:center; justify-content:space-between; }
+.card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; }
+.card-icon { font-size: 20px; opacity: .5; }
+.card-body { padding: 16px 20px 20px; }
+
+.field { margin-bottom: 12px; }
+.field label { display:block; font-size:11px; color:var(--white3); margin-bottom:6px; font-weight:500; }
+.field input, .field select {
+  width: 100%; background: var(--black3); border: 1px solid var(--black5);
+  color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+  padding: 10px 13px; border-radius: 8px; outline: none;
+  transition: border-color .2s, background .2s; -webkit-appearance: none;
+}
+.field input:focus, .field select:focus { border-color: var(--white3); background: var(--black4); }
+.field input::placeholder { color: var(--white3); }
+.field select option { background: #111; }
+.row { display:flex; gap:10px; }
+.row .field { flex:1; }
+
+.btn {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; padding:12px 16px; border:none; border-radius:8px;
+  font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
+  cursor:pointer; transition:all .15s;
+}
+.btn:active { transform:scale(.98); }
+.btn:disabled { opacity:.35; cursor:not-allowed; }
+.btn-lime { background:var(--lime); color:#000; }
+.btn-lime:hover { background:#d4ff33; box-shadow:0 4px 24px rgba(198,255,0,.2); }
+.btn-red { background:transparent; color:var(--red); border:1px solid rgba(255,59,48,.3); }
+.btn-red:hover { background:rgba(255,59,48,.08); border-color:var(--red); }
+.btn-orange { background:transparent; color:var(--orange); border:1px solid rgba(255,106,0,.3); }
+.btn-orange:hover { background:rgba(255,106,0,.08); border-color:var(--orange); }
+.btn+.btn { margin-top:8px; }
+
+.output-wrap { margin-top: 14px; position: relative; }
+.output {
+  background: var(--black); border: 1px solid var(--black4); border-radius: 8px;
+  padding: 12px 14px; font-family: 'DM Mono', monospace; font-size: 12px;
+  color: var(--lime); min-height: 90px; max-height: 200px; overflow-y: auto;
+  white-space: pre-wrap; word-break: break-all; line-height: 1.7;
+}
+.output.muted { color:var(--white3); font-style:italic; }
+.output.err   { color:var(--red); }
+
+.copy-btn {
+  position:absolute; top:8px; right:8px;
+  background:var(--black4); border:1px solid var(--black5);
+  color:var(--white3); font-family:'DM Mono',monospace; font-size:10px;
+  padding:3px 9px; border-radius:5px; cursor:pointer; transition:all .15s;
+}
+.copy-btn:hover { color:var(--white); border-color:var(--white3); }
+
+.list-card {
+  background: var(--black2); border: 1px solid var(--black4);
+  border-radius: 14px; overflow: hidden; animation: fadeUp .5s .25s ease both;
+}
+.list-toolbar {
+  padding: 16px 20px; border-bottom: 1px solid var(--black4);
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+}
+.filter-group { display:flex; gap:6px; flex-wrap:wrap; }
+.ftab {
+  font-size:12px; font-weight:600; padding:5px 13px;
+  border-radius:100px; border:1px solid var(--black5);
+  background:transparent; color:var(--white3); cursor:pointer; transition:all .15s;
+}
+.ftab:hover { color:var(--white2); border-color:var(--white3); }
+.ftab.on { background:var(--white); color:var(--black); border-color:var(--white); }
+
+.refresh-btn {
+  background:var(--black4); border:1px solid var(--black5);
+  color:var(--white2); font-size:13px; font-weight:600;
+  padding:6px 14px; border-radius:8px; cursor:pointer; transition:all .15s;
+}
+.refresh-btn:hover { background:var(--black5); color:var(--white); }
+
+.list-body { max-height: 460px; overflow-y: auto; }
+
+.krow {
+  padding:14px 20px; border-bottom:1px solid var(--black3);
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap; transition:background .15s;
+}
+.krow:hover { background:rgba(255,255,255,.02); }
+.krow:last-child { border-bottom:none; }
+.kkey {
+  font-family:'DM Mono',monospace; font-size:13px; color:var(--white);
+  flex:1; min-width:210px; cursor:pointer; transition:color .15s;
+}
+.kkey:hover { color:var(--lime); }
+.kmeta { font-size:11px; color:var(--white3); flex:2; min-width:140px; line-height:1.6; }
+.kactions { display:flex; gap:6px; }
+.kbtn {
+  font-size:11px; font-weight:600; padding:4px 10px;
+  border-radius:6px; border:1px solid var(--black5);
+  background:transparent; color:var(--white3); cursor:pointer; transition:all .15s;
+}
+.kbtn:hover { color:var(--red); border-color:rgba(255,59,48,.4); }
+.kbtn.kreset:hover { color:var(--orange); border-color:rgba(255,106,0,.4); }
+.kbtn.kunrevoke:hover { color:var(--lime); border-color:rgba(198,255,0,.4); }
+
+.badge { font-size:10px; font-weight:600; padding:3px 8px; border-radius:5px; white-space:nowrap; }
+.b-active  { background:rgba(198,255,0,.1);   color:var(--lime);   }
+.b-expired { background:rgba(255,106,0,.1);   color:var(--orange); }
+.b-revoked { background:rgba(255,59,48,.1);   color:var(--red);    }
+.b-forever { background:rgba(255,255,255,.06); color:var(--white2); }
+.b-daily   { background:rgba(255,106,0,.1);   color:var(--orange); }
+.b-weekly  { background:rgba(77,158,255,.1);  color:var(--blue);   }
+.b-monthly { background:rgba(198,255,0,.07);  color:#9dcc00;       }
+
+.list-empty { padding:48px 20px; text-align:center; color:var(--white3); font-size:14px; }
+
+#toast {
+  position:fixed; bottom:28px; left:50%;
+  transform:translateX(-50%) translateY(20px);
+  opacity:0; background:var(--black3); border:1px solid var(--black5);
+  border-radius:100px; padding:10px 20px;
+  font-size:13px; font-weight:500; color:var(--white);
+  z-index:9998; transition:all .25s; white-space:nowrap; pointer-events:none;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+#toast.good { border-color:rgba(198,255,0,.4); color:var(--lime); }
+#toast.bad  { border-color:rgba(255,59,48,.4);  color:var(--red); }
+
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--black5); border-radius:3px; }
+
+.spin {
+  display:inline-block; width:13px; height:13px;
+  border:2px solid rgba(255,255,255,.1); border-top-color:var(--white2);
+  border-radius:50%; animation:rot .6s linear infinite; vertical-align:middle;
+}
+@keyframes rot  { to{transform:rotate(360deg)} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div>
+      <div class="logo">Six<em>Seven</em></div>
+      <div class="logo-sub">painel de administração · key system v4</div>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      <span id="statusTxt">conectando...</span>
+    </div>
+  </header>
+
+  <div class="config-section">
+    <div class="config-field">
+      <label>Servidor</label>
+      <input type="text" id="serverUrl" value="https://67-production-4bf6.up.railway.app" spellcheck="false">
+    </div>
+    <div class="config-field">
+      <label>Token admin</label>
+      <input type="password" id="adminToken" value="SIXSEVEN_ADMIN" spellcheck="false">
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat s-total">  <div class="stat-n" id="sTotal">—</div><div class="stat-l">total</div></div>
+    <div class="stat s-active"> <div class="stat-n" id="sActive">—</div><div class="stat-l">ativas</div></div>
+    <div class="stat s-exp">    <div class="stat-n" id="sExp">—</div><div class="stat-l">expiradas</div></div>
+    <div class="stat s-rev">    <div class="stat-n" id="sRev">—</div><div class="stat-l">revogadas</div></div>
+    <div class="stat s-hwid">   <div class="stat-n" id="sHwid">—</div><div class="stat-l">com hwid</div></div>
+  </div>
+
+  <div class="section-title">ações <span>gerar · revogar · resetar</span></div>
+  <div class="action-grid">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Gerar keys</div>
+        <div class="card-icon">⚡</div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="field">
+            <label>Quantidade</label>
+            <input type="number" id="genCount" value="10" min="1" max="500">
+          </div>
+          <div class="field">
+            <label>Duração</label>
+            <select id="genType">
+              <option value="forever">Forever</option>
+              <option value="monthly">30 dias</option>
+              <option value="weekly">7 dias</option>
+              <option value="daily">1 dia</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-lime" onclick="generateKeys()">Gerar agora</button>
+        <div class="output-wrap">
+          <div id="genOut" class="output muted">// as keys vão aparecer aqui</div>
+          <button class="copy-btn" onclick="copyOut()">copiar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Gerenciar key</div>
+        <div class="card-icon">🔧</div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label>Key</label>
+          <input type="text" id="actionKey" placeholder="SIXSEVEN-XXXXXXXX-XXXXXXXX" spellcheck="false">
+        </div>
+        <button class="btn btn-red" onclick="revokeKey()">Revogar key</button>
+        <button class="btn btn-lime" style="background:transparent;color:var(--lime);border:1px solid rgba(198,255,0,.3)" onclick="unrevokeKey()">Restaurar key</button>
+        <button class="btn btn-orange" onclick="resetHwid()">Resetar HWID</button>
+        <div class="output-wrap">
+          <div id="actionOut" class="output muted">// resultado vai aparecer aqui</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-title">keys <span id="listCountTitle"></span></div>
+  <div class="list-card">
+    <div class="list-toolbar">
+      <div class="filter-group">
+        <button class="ftab on" onclick="loadList('all',this)">Todas</button>
+        <button class="ftab" onclick="loadList('active',this)">Ativas</button>
+        <button class="ftab" onclick="loadList('expired',this)">Expiradas</button>
+        <button class="ftab" onclick="loadList('revoked',this)">Revogadas</button>
+      </div>
+      <button class="refresh-btn" onclick="loadList(curFilter)">↺ atualizar</button>
+    </div>
+    <div class="list-body" id="keyList">
+      <div class="list-empty">clique em atualizar para ver as keys</div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+let curFilter = 'all';
+const $ = id => document.getElementById(id);
+
+// FIX: base() agora faz trim e remove barras duplas — evita "Failed to fetch" por URL malformada
+const base  = () => $('serverUrl').value.trim().replace(/\/+$/, '');
+const token = () => $('adminToken').value.trim();
+
+// FIX: api() com tratamento completo de erros de rede, HTTP e JSON
+async function api(path) {
+  const url = base() + path;
+  let res;
+  try {
+    res = await fetch(url);
+  } catch (e) {
+    throw new Error('Sem conexão com o servidor. Verifique a URL e se ele está online. (' + e.message + ')');
+  }
+  if (!res.ok && res.status !== 401 && res.status !== 403 && res.status !== 404) {
+    throw new Error('Servidor retornou HTTP ' + res.status);
+  }
+  try {
+    return await res.json();
+  } catch (e) {
+    throw new Error('Resposta inválida do servidor (não é JSON). URL correta?');
+  }
+}
+
+let tt;
+function toast(msg, type='good') {
+  const t=$('toast'); t.textContent=msg; t.className='show '+type;
+  clearTimeout(tt); tt=setTimeout(()=>t.className='',2800);
+}
+
+// FIX: checkStatus restaura dot verde quando servidor volta online
+async function checkStatus() {
+  try {
+    const d = await api('/');
+    if (d.ok) {
+      $('statusTxt').textContent = 'online';
+      document.querySelector('.status-dot').style.cssText = '';
+    }
+  } catch(e) {
+    $('statusTxt').textContent = 'offline';
+    document.querySelector('.status-dot').style.cssText = 'background:#ff3b30;box-shadow:0 0 8px #ff3b30';
+  }
+}
+
+// FIX: loadStats mostra erro visível em vez de falhar silenciosamente
+async function loadStats() {
+  try {
+    const d = await api('/admin/stats?token='+token());
+    if (!d.ok) { toast('Token inválido ou erro ao carregar stats', 'bad'); return; }
+    $('sTotal').textContent  = d.stats.total;
+    $('sActive').textContent = d.stats.active;
+    $('sExp').textContent    = d.stats.expired;
+    $('sRev').textContent    = d.stats.revoked;
+    $('sHwid').textContent   = d.stats.withHwid;
+  } catch(e) {
+    toast('Erro: ' + e.message, 'bad');
+  }
+}
+
+async function generateKeys() {
+  const out=$('genOut'), count=$('genCount').value, type=$('genType').value;
+  out.className='output'; out.innerHTML='<span class="spin"></span> gerando '+count+' keys...';
+  try {
+    const d=await api('/admin/generate?token='+token()+'&n='+count+'&type='+type);
+    if (!d.ok) { out.className='output err'; out.textContent=d.reason; return; }
+    out.className='output'; out.textContent=d.keys.join('\n');
+    toast('✓ '+d.generated+' keys geradas'); loadStats(); loadList(curFilter);
+  } catch(e) { out.className='output err'; out.textContent='⚠ '+e.message; }
+}
+
+function copyOut() {
+  const t=$('genOut').textContent;
+  if (!t||t.startsWith('//')) return;
+  navigator.clipboard.writeText(t).then(()=>toast('copiado!'));
+}
+
+async function revokeKey() {
+  const key=$('actionKey').value.trim(), out=$('actionOut');
+  if (!key) { toast('coloca a key primeiro','bad'); return; }
+  out.className='output'; out.innerHTML='<span class="spin"></span> revogando...';
+  try {
+    const d=await api('/admin/revoke?token='+token()+'&key='+encodeURIComponent(key));
+    out.className=d.ok?'output':'output err'; out.textContent=d.reason;
+    if (d.ok) { toast('key revogada'); loadStats(); loadList(curFilter); }
+    else toast(d.reason,'bad');
+  } catch(e) { out.className='output err'; out.textContent='⚠ '+e.message; }
+}
+
+// FIX: novo — desrevogar key (rota /admin/unrevoke adicionada no server)
+async function unrevokeKey() {
+  const key=$('actionKey').value.trim(), out=$('actionOut');
+  if (!key) { toast('coloca a key primeiro','bad'); return; }
+  out.className='output'; out.innerHTML='<span class="spin"></span> restaurando...';
+  try {
+    const d=await api('/admin/unrevoke?token='+token()+'&key='+encodeURIComponent(key));
+    out.className=d.ok?'output':'output err'; out.textContent=d.reason;
+    if (d.ok) { toast('key restaurada'); loadStats(); loadList(curFilter); }
+    else toast(d.reason,'bad');
+  } catch(e) { out.className='output err'; out.textContent='⚠ '+e.message; }
+}
+
+async function resetHwid() {
+  const key=$('actionKey').value.trim(), out=$('actionOut');
+  if (!key) { toast('coloca a key primeiro','bad'); return; }
+  out.className='output'; out.innerHTML='<span class="spin"></span> resetando hwid...';
+  try {
+    const d=await api('/admin/reset-hwid?token='+token()+'&key='+encodeURIComponent(key));
+    out.className=d.ok?'output':'output err'; out.textContent=d.reason;
+    if (d.ok) { toast('hwid resetado'); loadList(curFilter); }
+    else toast(d.reason,'bad');
+  } catch(e) { out.className='output err'; out.textContent='⚠ '+e.message; }
+}
+
+// FIX: loadList mostra mensagem de erro completa em vez de "erro: Failed to fetch"
+async function loadList(filter, tabEl) {
+  curFilter=filter||'all';
+  if (tabEl) { document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('on')); tabEl.classList.add('on'); }
+  const list=$('keyList');
+  list.innerHTML='<div class="list-empty"><span class="spin"></span> carregando...</div>';
+  try {
+    const d=await api('/admin/list?token='+token()+'&filter='+curFilter);
+    if (!d.ok) { list.innerHTML='<div class="list-empty" style="color:#ff3b30">'+d.reason+'</div>'; return; }
+    $('listCountTitle').textContent=d.count+' encontradas';
+    if (!d.keys.length) { list.innerHTML='<div class="list-empty">nenhuma key aqui</div>'; return; }
+    list.innerHTML=d.keys.map(buildRow).join('');
+  } catch(e) {
+    list.innerHTML='<div class="list-empty" style="color:#ff3b30">⚠ '+e.message+'</div>';
+  }
+}
+
+function buildRow(k) {
+  const now=new Date(), isExp=k.expiresAt&&new Date(k.expiresAt)<=now;
+  const status=k.revoked?'revoked':isExp?'expired':'active';
+  const sLabel=k.revoked?'revogada':isExp?'expirada':'ativa';
+  const expTxt=k.expiresAt?new Date(k.expiresAt).toLocaleDateString('pt-BR'):'nunca';
+  // FIX: hwid pode ser null — guard adicionado
+  const hwid=k.hwid?(k.hwid.substring(0,14)+'…'):'sem hwid';
+  return `<div class="krow">
+    <div class="kkey" onclick="copyKey('${k.key}')" title="copiar">${k.key}</div>
+    <span class="badge b-${status}">${sLabel}</span>
+    <span class="badge b-${k.type}">${k.type}</span>
+    <div class="kmeta">${hwid}<br>expira: ${expTxt}</div>
+    <div class="kactions">
+      <button class="kbtn kreset" onclick="quickReset('${k.key}')">hwid</button>
+      ${k.revoked
+        ? `<button class="kbtn kunrevoke" onclick="quickUnrevoke('${k.key}')">restaurar</button>`
+        : `<button class="kbtn" onclick="quickRevoke('${k.key}')">revogar</button>`}
+    </div>
+  </div>`;
+}
+
+function copyKey(key) { navigator.clipboard.writeText(key).then(()=>toast('copiado!')); }
+
+async function quickRevoke(key) {
+  if (!confirm('Revogar '+key+'?')) return;
+  $('actionKey').value=key; await revokeKey();
+}
+// FIX: novo — desrevogar direto da lista
+async function quickUnrevoke(key) {
+  if (!confirm('Restaurar '+key+'?')) return;
+  $('actionKey').value=key; await unrevokeKey();
+}
+async function quickReset(key) {
+  if (!confirm('Resetar HWID de '+key+'?')) return;
+  $('actionKey').value=key; await resetHwid();
+}
+
+checkStatus(); loadStats(); loadList('all');
+setInterval(loadStats, 30000);
+setInterval(checkStatus, 60000);
+</script>
+</body>
+</html>

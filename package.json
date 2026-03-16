@@ -1,0 +1,16 @@
+{
+  "name": "sixseven-keysystem",
+  "version": "1.0.0",
+  "description": "Six Painel v4 - Key System com HWID e expiracao",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "echo ok"
+  },
+  "engines": {
+    "node": "18.x",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {},
+  "license": "ISC"
+}
